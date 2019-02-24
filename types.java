@@ -315,7 +315,6 @@ class AssignmentNode implements Expression {
 	public int interpret() {
 		if (Main.values.containsKey(((VarNode)e1).var)) {
 			Main.values.put(((VarNode)e1).var, e2.interpret());
-			System.out.println(((VarNode)e1).var + "=" + e2.interpret());
 			return 0;
 		}
 		return 0;
