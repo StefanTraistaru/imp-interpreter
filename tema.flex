@@ -11,7 +11,7 @@ import java.util.*;
     Stack<Integer> precedence = new Stack<>();
     ArrayList<String> variables = new ArrayList<>();
 
-    // Intoarce al n-lea element de pe stiva
+    // Returns the n-th element from stack
 	Expression get_nth_element_from_stack(int element_number) {
         Stack<Expression> temp_stack = new Stack<>();
 
@@ -31,14 +31,14 @@ import java.util.*;
         return res;
     }
 
-    // Elimina al doilea element de pe stiva "precedence"
+    // Removes the second element from the "precedence" stack
     void pop_second() {
         int aux = precedence.pop();
         precedence.pop();
         precedence.push(aux);
     }
 
-    // Verifica daca ";" sunt de la prima linie
+    // Checks if the ";" symbol is from the first line (variable declaration line)
     boolean check_declaration() {
         if (stack.peek() instanceof VarNode && stack.size() == 1) {
             variables.add( ((VarNode) stack.pop()).var);
@@ -47,7 +47,7 @@ import java.util.*;
         return false;
     }
 
-    // Functie ajutatoare pentru "add_in_place"
+    // Helper function for "add_in_place"
     void add_sequence_node(Expression node) {
         Expression aux = stack.peek();
         while (((SequenceNode) aux).e2 instanceof SequenceNode) {
@@ -56,10 +56,10 @@ import java.util.*;
         ((SequenceNode) aux).e2 = new SequenceNode(((SequenceNode) aux).e2, node);
     }
 
-    // Adauga un element de tip Expression in arbore
+    // Adding an Expression element in the tree
     void add_in_place(Expression node) {
 
-        // Daca arborele este gol se adauga noua expresie pe stiva
+        // If the tree is empty add the new expression from the stack
         if (stack.isEmpty()) {
             stack.push(node);
             return;
@@ -67,8 +67,8 @@ import java.util.*;
         
         Expression aux = stack.peek();
 
-        // Daca se mai afla o expresie pe stiva, se va scoate si se va adauga
-        // un SequenceNode care le va contine pe ambele
+		// If there is another expression on the stack, it will be removed and
+		// a SequenceNode containing the old expression and the new one will be added.
         if (aux instanceof AssignmentNode ||
             aux instanceof IfNode ||
             aux instanceof WhileNode) {
@@ -76,19 +76,19 @@ import java.util.*;
             return;
         }
 
-        // Daca se afla un SequenceNode pe stiva, noul nod va fi introdus
-        // corespunzator in Sequence folosind functia ajutatoare "add_sequence_node"
+		// If there is a SequenceNode on the stack, the new node will be placed
+		// in the SequenceNode using the "add_sequence_node" function
         if (aux instanceof SequenceNode) {
             add_sequence_node(node);
             return;
         }
 
-        // Verific daca nodul curent este un BlockNode
-        // Daca face parte din while sau este al doilea din if
-        // atunci voi crea un IfNode sau WhileNode si il voi pune pe stiva
+		// Checking if the current node is a BlockNode
+		// If it is a part of a "while" or it is the second blocknode from an "if"
+		// the it will create an IfNode or a WhileNode and put it on the stack
         if (node instanceof BlockNode) {
             
-            // Pentru if voi verifica daca varful stivei este un "else"
+			// For "if" it checks if the top of the stack is an "else"
             if (stack.peek() instanceof SymbolNode &&
                ((SymbolNode)stack.peek()).symbol == "else") {
                 stack.pop(); // Scot "else"
@@ -100,7 +100,7 @@ import java.util.*;
                 return;
             }
 
-            // Pentru while
+            // For "while"
             aux = get_nth_element_from_stack(2);
             if (aux instanceof SymbolNode &&
                ((SymbolNode)aux).symbol == "while") {
@@ -112,13 +112,12 @@ import java.util.*;
             }
         }
 
-        // Daca nu este valabil niciun caz din cele de mai sus
-        // nodul este adaugat pe stiva
+		// If it's none of the above, the node will be added to the stack
         stack.push(node);
     }
 
-    // Evalueaza toate operatiile de precedenta mai mare sau egala
-    // sau pana la "=" sau "("
+	// Evaluates all the operations with a higher or equal precedence
+	// or until a "=" or "(" symbol
     void evaluate_before() {
         Expression e = get_nth_element_from_stack(2);
 
@@ -171,8 +170,8 @@ import java.util.*;
         }
     }
 
-    // Cand se citeste o operatie, in functie de precedenta,
-    // se va evalua sau nu expresia deja existenta
+	// When an operation is read, it will evaluate the existing expression
+	// based on the precedence of the operation
     void evaluate_sign(int prec, String symbol) {
         if (!precedence.isEmpty() && precedence.peek() >= prec) {
             precedence.push(prec);
@@ -185,7 +184,7 @@ import java.util.*;
 
 %}
  
-// Primitive
+// Primitives
 Number      = [1-9][0-9]* | 0
 String      = (a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)+
 Var         = {String}
@@ -193,7 +192,7 @@ AVal        = {Number}
 BVal        = "true" | "false"
 Type        = "int"
 
-// Simboluri
+// Symbols
 Equal       = "="
 SemiCol     = ";"
 Comma       = ","
@@ -202,14 +201,14 @@ Close_Par   = ")"
 Open_Bl     = "{"
 Close_Bl    = "}"
 
-// Operatii
+// Operations
 And         = "&&"
 Not         = "!"
 Greater     = ">"
 Plus        = "+"
 Divide      = "/"
 
-// Conditii
+// Conditions
 While       = "while"
 If          = "if"
 Else        = "else"
@@ -218,7 +217,7 @@ Else        = "else"
 
 {Type}      { }
 
-// Conditii
+// Conditions
 {While}     {   stack.push(new SymbolNode("while")); }
 {If}        {   stack.push(new SymbolNode("if")); }
 {Else}      {   stack.push(new SymbolNode("else")); }
@@ -245,7 +244,7 @@ Else        = "else"
                 }
             }
 
-// Paranteze
+// Parentheses
 {Open_Par}  { stack.push(new SymbolNode("(")); }
 {Close_Par} {   
                 precedence.push(-1);
@@ -270,7 +269,7 @@ Else        = "else"
                 }
             }
 
-// Operatii
+// Operations
 {And}       {   evaluate_sign(1, "&&"); }
 {Not}       {   evaluate_sign(2, "!"); }
 {Greater}   {   evaluate_sign(3, ">"); }
